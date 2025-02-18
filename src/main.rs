@@ -26,10 +26,9 @@ async fn main() -> std::io::Result<()> {
             .app_data(db_data.clone())
             .wrap(
                 Cors::default()
-                    .allowed_origin("http://127.0.0.1:5500")
+                    .allow_any_origin()
                     .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
                     .allowed_headers(vec![http::header::CONTENT_TYPE, http::header::AUTHORIZATION])
-                    .allow_any_origin()
                     .max_age(3600),
             )
             .service(index)  // 👈 Добавлен обработчик "/"
