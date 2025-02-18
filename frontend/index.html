@@ -32,30 +32,58 @@
 
         async function createUser() {
             const user = {
-                name: document.getElementById("name").value,
-                location: document.getElementById("location").value,
-                title: document.getElementById("title").value
+                name: document.getElementById("name").value.trim(),
+                location: document.getElementById("location").value.trim(),
+                title: document.getElementById("title").value.trim()
             };
+            if (!user.name || !user.location || !user.title) {
+                alert("Все поля должны быть заполнены!");
+                return;
+            }
             const res = await fetch(`${API_BASE_URL}/user`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(user)
             });
+            if (!res.ok) {
+                alert("Ошибка: " + res.statusText);
+                return;
+            }
             const data = await res.json();
             alert("User Created: " + JSON.stringify(data));
         }
 
         async function getUser() {
-            const userId = document.getElementById("userId").value;
+            const userId = document.getElementById("userId").value.trim();
+            if (!userId) {
+                alert("Введите ID пользователя!");
+                return;
+            }
             const res = await fetch(`${API_BASE_URL}/user/${userId}`);
-            const data = await res.json();
-            document.getElementById("userData").innerText = JSON.stringify(data, null, 2);
+            if (!res.ok) {
+                alert("Ошибка: " + res.statusText);
+                return;
+            }
+            try {
+                const data = await res.json();
+                document.getElementById("userData").innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                alert("Ошибка JSON: " + error.message);
+            }
         }
 
         async function getAllUsers() {
             const res = await fetch(`${API_BASE_URL}/users`);
-            const data = await res.json();
-            document.getElementById("userData").innerText = JSON.stringify(data, null, 2);
+            if (!res.ok) {
+                alert("Ошибка: " + res.statusText);
+                return;
+            }
+            try {
+                const data = await res.json();
+                document.getElementById("userData").innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                alert("Ошибка JSON: " + error.message);
+            }
         }
     </script>
 </body>
