@@ -31,7 +31,7 @@ async fn main() -> std::io::Result<()> {
                     .allowed_headers(vec![http::header::CONTENT_TYPE, http::header::AUTHORIZATION])
                     .max_age(3600),
             )
-            .service(index)  // 👈 Добавлен обработчик "/"
+            .service(index)
             .service(create_user)
             .service(get_user)
             .service(update_user) 
