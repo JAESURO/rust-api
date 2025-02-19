@@ -26,7 +26,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(db_data.clone())
             .wrap(
                 Cors::default()
-                    .allow_any_origin()
+                    .allowed_origin("https://rust-api-front.onrender.com")
                     .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
                     .allowed_headers(vec![http::header::CONTENT_TYPE, http::header::AUTHORIZATION])
                     .max_age(3600),
