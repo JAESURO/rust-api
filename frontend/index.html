@@ -31,6 +31,7 @@
         const API_BASE_URL = "https://rust-api-w2ac.onrender.com";
 
         async function createUser() {
+            console.log("Creating user...");
             const user = {
                 name: document.getElementById("name").value.trim(),
                 location: document.getElementById("location").value.trim(),
