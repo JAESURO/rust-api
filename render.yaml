@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ecommerce-store
+    env: rust
+    buildCommand: "cargo build --release"
+    startCommand: "./target/release/ecommerce_store"
+    envVars:
+      - key: MONGOURI
+        sync: false

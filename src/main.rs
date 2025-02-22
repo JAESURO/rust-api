@@ -1,44 +1,32 @@
-mod api;
-mod models;
-mod repository;
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_files::Files;
+use tera::{Tera, Context};
+use std::sync::Mutex;
 
-use actix_cors::Cors;
-use actix_web::{web::Data, App, HttpServer, http, get, HttpResponse, Responder};
-use api::user_api::{create_user, get_user, update_user, delete_user, get_all_users}; //import the handler here
-use repository::mongodb_repo::MongoRepo;
-use std::env;
+struct AppState {
+    tera: Tera,
+}
 
-#[get("/")]
-async fn index() -> impl Responder {
-    HttpResponse::Ok().body("Rust API is running! 🚀")
+async fn index(data: web::Data<Mutex<AppState>>) -> impl Responder {
+    let tera = data.lock().unwrap();
+    let mut ctx = Context::new();
+    ctx.insert("title", "Welcome to E-Commerce Store");
+
+    let rendered = tera.tera.render("index.ejs", &ctx).unwrap();
+    HttpResponse::Ok().content_type("text/html").body(rendered)
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let db = MongoRepo::init().await;
-    let db_data = Data::new(db);
-
-    let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
-    let port: u16 = port.parse().expect("Invalid PORT");
+    let tera = Tera::new("src/views/**/*").unwrap();
 
     HttpServer::new(move || {
         App::new()
-            .app_data(db_data.clone())
-            .wrap(
-                Cors::default()
-                    .allow_any_origin()
-                    .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
-                    .allowed_headers(vec![http::header::CONTENT_TYPE, http::header::AUTHORIZATION])
-                    .max_age(3600),
-            )
-            .service(index)
-            .service(create_user)
-            .service(get_user)
-            .service(update_user) 
-            .service(delete_user) 
-            .service(get_all_users)
+            .app_data(web::Data::new(Mutex::new(AppState { tera: tera.clone() })))
+            .route("/", web::get().to(index))
+            .service(Files::new("/static", "src/views/static")) // Serve static files
     })
-    .bind(("0.0.0.0", port))?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }
