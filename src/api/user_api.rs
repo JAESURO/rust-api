@@ -1,8 +1,8 @@
 use crate::{models::user_model::User, repository::mongodb_repo::MongoRepo};
-    use actix_web::{
-        post, get, put, delete,
-        web::{Data, Json, Path},
-        HttpResponse,
+use actix_web::{
+    post, get, put, delete,
+    web::{Data, Json, Path},
+    HttpResponse,
 };
 use mongodb::bson::oid::ObjectId;
 
@@ -16,7 +16,7 @@ pub async fn create_user(db: Data<MongoRepo>, new_user: Json<User>) -> HttpRespo
     };
     let user_detail = db.create_user(data).await;
     match user_detail {
-        Ok(user) => HttpResponse::Ok().json(user),
+        Ok(user) => HttpResponse::Created().json(user),
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
     }
 }
@@ -24,8 +24,8 @@ pub async fn create_user(db: Data<MongoRepo>, new_user: Json<User>) -> HttpRespo
 #[get("/user/{id}")]
 pub async fn get_user(db: Data<MongoRepo>, path: Path<String>) -> HttpResponse {
     let id = path.into_inner();
-    if id.is_empty() {
-        return HttpResponse::BadRequest().body("invalid ID");
+    if id.is_empty() || !ObjectId::is_valid(&id) {
+        return HttpResponse::BadRequest().body("Invalid ID");
     }
     let user_detail = db.get_user(&id).await;
     match user_detail {
@@ -41,9 +41,9 @@ pub async fn update_user(
     new_user: Json<User>,
 ) -> HttpResponse {
     let id = path.into_inner();
-    if id.is_empty() {
-        return HttpResponse::BadRequest().body("invalid ID");
-    };
+    if id.is_empty() || !ObjectId::is_valid(&id) {
+        return HttpResponse::BadRequest().body("Invalid ID");
+    }
     let data = User {
         id: Some(ObjectId::parse_str(&id).unwrap()),
         name: new_user.name.to_owned(),
@@ -70,9 +70,9 @@ pub async fn update_user(
 #[delete("/user/{id}")]
 pub async fn delete_user(db: Data<MongoRepo>, path: Path<String>) -> HttpResponse {
     let id = path.into_inner();
-    if id.is_empty() {
-        return HttpResponse::BadRequest().body("invalid ID");
-    };
+    if id.is_empty() || !ObjectId::is_valid(&id) {
+        return HttpResponse::BadRequest().body("Invalid ID");
+    }
     let result = db.delete_user(&id).await;
     match result {
         Ok(res) => {
