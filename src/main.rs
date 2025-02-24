@@ -24,9 +24,18 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(Mutex::new(AppState { tera: tera.clone() })))
             .route("/", web::get().to(index))
-            .service(Files::new("/static", "src/views/static")) // Serve static files
+            .route("/login", web::get().to(login_page))  // Добавлен маршрут для логина
+            .service(Files::new("/static", "src/views/static"))
     })
     .bind("0.0.0.0:8080")?
     .run()
     .await
+}
+async fn login_page(data: web::Data<Mutex<AppState>>) -> impl Responder {
+    let tera = data.lock().unwrap();
+    let mut ctx = Context::new();
+    ctx.insert("title", "Login");
+
+    let rendered = tera.tera.render("login.ejs", &ctx).unwrap();
+    HttpResponse::Ok().content_type("text/html").body(rendered)
 }
