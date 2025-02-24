@@ -6,6 +6,31 @@ use actix_web::{
 };
 use mongodb::bson::oid::ObjectId;
 
+#[post("/register")]
+pub async fn register_user(db: Data<MongoRepo>, new_user: Json<User>) -> HttpResponse {
+    // Ensure that the user has an email and password
+    if new_user.email.is_empty() || new_user.password.is_empty() {
+        return HttpResponse::BadRequest().body("Email and password are required.");
+    }
+
+    // Create a new User instance
+    let data = User {
+        id: None,
+        name: new_user.name.to_owned(),
+        email: new_user.email.to_owned(),
+        password: new_user.password.to_owned(), // Make sure to hash the password before saving it
+        location: new_user.location.to_owned(),
+        title: new_user.title.to_owned(),
+    };
+
+    // Store the user in the database
+    let user_detail = db.create_user(data).await;
+    match user_detail {
+        Ok(user) => HttpResponse::Created().json(user),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
+}
+
 #[post("/user")]
 pub async fn create_user(db: Data<MongoRepo>, new_user: Json<User>) -> HttpResponse {
     let data = User {
