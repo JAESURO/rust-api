@@ -25,6 +25,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(Mutex::new(AppState { tera: tera.clone() })))
             .route("/", web::get().to(index))
             .route("/login", web::get().to(login_page))  // Добавлен маршрут для логина
+            .route("/register", web::get().to(register))  // Добавлен маршрут для логина
+            .route("/users", web::get().to(users_page))  // Добавлен маршрут для логина
             .service(Files::new("/static", "src/views/static"))
     })
     .bind("0.0.0.0:8080")?
@@ -37,5 +39,23 @@ async fn login_page(data: web::Data<Mutex<AppState>>) -> impl Responder {
     ctx.insert("title", "Login");
 
     let rendered = tera.tera.render("login.ejs", &ctx).unwrap();
+    HttpResponse::Ok().content_type("text/html").body(rendered)
+}
+
+async fn register(data: web::Data<Mutex<AppState>>) -> impl Responder {
+    let tera = data.lock().unwrap();
+    let mut ctx = Context::new();
+    ctx.insert("title", "Register");
+
+    let rendered = tera.tera.render("register.ejs", &ctx).unwrap();
+    HttpResponse::Ok().content_type("text/html").body(rendered)
+}
+
+async fn users_page(data: web::Data<Mutex<AppState>>) -> impl Responder {
+    let tera = data.lock().unwrap();
+    let mut ctx = Context::new();
+    ctx.insert("title", "Users");
+
+    let rendered = tera.tera.render("dashboard.ejs", &ctx).unwrap();
     HttpResponse::Ok().content_type("text/html").body(rendered)
 }
