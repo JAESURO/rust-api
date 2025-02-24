@@ -83,7 +83,7 @@
             const loginForm = document.getElementById('loginForm');
             const errorMessage = document.getElementById('errorMessage');
 
-            loginForm.addEventListener('submit', function(e) {
+            loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const email = document.getElementById('email').value;
@@ -95,13 +95,25 @@
                     return;
                 }
 
-                // Here you would typically send a request to your server
-                // For this example, we'll just simulate a login check
-                if (email === 'user@example.com' && password === 'password') {
+                try {
+                    const response = await fetch('http://your-api-url/user', { // Replace with your API URL
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Login failed!');
+                    }
+
+                    const result = await response.json();
                     errorMessage.textContent = '';
-                    alert('Login successful!');
+                    alert('Login successful!'); // Handle successful login here
                     // Redirect or perform other actions on successful login
-                } else {
+
+                } catch (error) {
                     errorMessage.textContent = 'Invalid email or password.';
                 }
             });
