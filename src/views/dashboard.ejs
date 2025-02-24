@@ -61,17 +61,24 @@
     </div>
 
     <script>
-        // Sample user data (in a real application, this would come from an API or database)
-        const users = [
-            { id: 1, name: "John Doe", email: "john@example.com", city: "New York" },
-            { id: 2, name: "Jane Smith", email: "jane@example.com", city: "Los Angeles" },
-            { id: 3, name: "Bob Johnson", email: "bob@example.com", city: "Chicago" },
-            { id: 4, name: "Alice Brown", email: "alice@example.com", city: "Houston" },
-            { id: 5, name: "Charlie Wilson", email: "charlie@example.com", city: "Phoenix" }
-        ];
+        // Function to fetch user data from the API
+        async function fetchUserData() {
+            try {
+                const response = await fetch('http://your-api-url/users'); // Replace with your API URL
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const users = await response.json();
+                populateUserTable(users);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                const tableBody = document.getElementById("userTableBody");
+                tableBody.innerHTML = `<tr><td colspan="4">Failed to load user data.</td></tr>`;
+            }
+        }
 
         // Function to populate the table with user data
-        function populateUserTable() {
+        function populateUserTable(users) {
             const tableBody = document.getElementById("userTableBody");
             tableBody.innerHTML = ""; // Clear existing content
 
@@ -87,8 +94,8 @@
             });
         }
 
-        // Call the function to populate the table when the page loads
-        window.onload = populateUserTable;
+        // Call the function to fetch user data when the page loads
+        window.onload = fetchUserData;
     </script>
 </body>
 </html>

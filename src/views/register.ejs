@@ -92,9 +92,9 @@
             const registerForm = document.getElementById('registerForm');
             const errorMessage = document.getElementById('errorMessage');
 
-            registerForm.addEventListener('submit', function(e) {
+            registerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                
+
                 const name = document.getElementById('name').value;
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
@@ -111,13 +111,29 @@
                     return;
                 }
 
-                // Here you would typically send a request to your server to create a new user
-                // For this example, we'll just simulate a successful registration
-                errorMessage.textContent = '';
-                alert('Registration successful! Welcome, ' + name + '!');
-                // Clear the form
-                registerForm.reset();
-                // In a real application, you might redirect the user or show a success message
+                try {
+                    const response = await fetch('http://your-api-url/user', { // Replace with your API URL
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name, email, password })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Registration failed!');
+                    }
+
+                    const result = await response.json();
+                    errorMessage.textContent = '';
+                    alert('Registration successful! Welcome, ' + name + '!');
+                    // Clear the form
+                    registerForm.reset();
+                    // In a real application, you might redirect the user or show a success message
+
+                } catch (error) {
+                    errorMessage.textContent = 'An error occurred during registration.';
+                }
             });
         });
     </script>
