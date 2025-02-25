@@ -8,7 +8,7 @@ struct AppState {
 }
 
 // Структура для данных пользователя
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct User {
     username: String,
     email: String,
