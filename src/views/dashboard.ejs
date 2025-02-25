@@ -55,25 +55,21 @@
                 </tr>
             </thead>
             <tbody id="userTableBody">
-                <!-- User data will be inserted here -->
             </tbody>
         </table>
     </div>
 
     <script>
-        const API_URL = '/users'; // Relative path to your API endpoint
-
-        // Function to fetch all users
+        const API_URL = '/users';
         async function fetchAllUsers() {
-            const response = await fetch(API_URL); // Use relative path
+            const response = await fetch(API_URL);
             const users = await response.json();
             populateUserTable(users);
         }
 
-        // Function to populate the table with user data
         function populateUserTable(users) {
             const tableBody = document.getElementById("userTableBody");
-            tableBody.innerHTML = ""; // Clear existing content
+            tableBody.innerHTML = "";
 
             users.forEach(user => {
                 const row = document.createElement("tr");
@@ -86,8 +82,6 @@
                 tableBody.appendChild(row);
             });
         }
-
-        // Call the function to fetch user data when the page loads
         window.onload = fetchAllUsers;
     </script>
 </body>

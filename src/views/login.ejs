@@ -89,14 +89,13 @@
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
 
-                // Simple client-side validation
                 if (!email || !password) {
                     errorMessage.textContent = 'Please enter both email and password.';
                     return;
                 }
 
                 try {
-                    const response = await fetch('/login', { // Use relative path for your API URL
+                    const response = await fetch('/login', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -110,9 +109,7 @@
 
                     const result = await response.json();
                     errorMessage.textContent = '';
-                    alert('Login successful!'); // Handle successful login here
-                    // Redirect or perform other actions on successful login
-
+                    alert('Login successful!');
                 } catch (error) {
                     errorMessage.textContent = 'Invalid email or password.';
                 }
