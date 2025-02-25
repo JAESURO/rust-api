@@ -91,48 +91,47 @@
         document.addEventListener('DOMContentLoaded', function() {
             const registerForm = document.getElementById('registerForm');
             const errorMessage = document.getElementById('errorMessage');
-
+    
             registerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-
+    
                 const name = document.getElementById('name').value;
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
-
+    
                 // Simple client-side validation
                 if (!name || !email || !password || !confirmPassword) {
                     errorMessage.textContent = 'Please fill in all fields.';
                     return;
                 }
-
+    
                 if (password !== confirmPassword) {
                     errorMessage.textContent = 'Passwords do not match.';
                     return;
                 }
-
+    
                 try {
-                    const response = await fetch('/register', { // Use relative path for your API URL
+                    const response = await fetch('/register', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ name, email, password })
                     });
-
+    
                     if (!response.ok) {
-                        throw new Error('Registration failed!');
+                        const errorData = await response.json();
+                        throw new Error(`Registration failed: ${errorData.message || 'Unknown error'}`);
                     }
-
+    
                     const result = await response.json();
                     errorMessage.textContent = '';
                     alert('Registration successful! Welcome, ' + name + '!');
-                    // Clear the form
                     registerForm.reset();
-                    // In a real application, you might redirect the user or show a success message
-
+    
                 } catch (error) {
-                    errorMessage.textContent = 'An error occurred during registration.';
+                    errorMessage.textContent = error.message || 'An error occurred during registration.';
                 }
             });
         });
