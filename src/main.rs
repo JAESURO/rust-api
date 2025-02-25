@@ -3,6 +3,8 @@ use tera::{Tera, Context};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 
+mod db;
+
 struct AppState {
     tera: Tera,
 }
@@ -76,11 +78,21 @@ async fn users_page(data: web::Data<Mutex<AppState>>) -> impl Responder {
     }
 }
 
-// 📌 Главная функция для запуска сервера
+// 📌 Главная функция для запуска сервера и подключения к MongoDB
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Подключение к MongoDB
+    let mongo_connection = tokio::spawn(async {
+        match db::mongo::connect_to_mongo().await {
+            Ok(_) => println!("MongoDB connected successfully."),
+            Err(e) => eprintln!("Error connecting to MongoDB: {}", e),
+        }
+    });
+
+    // Инициализация Tera шаблонов
     let tera = Tera::new("src/views/**/*").expect("Failed to initialize Tera templates");
 
+    // Запуск Actix веб-сервера
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(Mutex::new(AppState { tera: tera.clone() })))
@@ -92,5 +104,10 @@ async fn main() -> std::io::Result<()> {
     })
     .bind("0.0.0.0:8080")?
     .run()
-    .await
+    .await?;
+
+    // Ждем завершения подключения к MongoDB
+    mongo_connection.await?;
+
+    Ok(())
 }
