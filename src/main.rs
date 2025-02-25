@@ -1,12 +1,22 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder, post, get};
 use tera::{Tera, Context};
+use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 
 struct AppState {
     tera: Tera,
 }
 
-// Function to render the index page
+// Структура для данных пользователя
+#[derive(Serialize, Deserialize)]
+struct User {
+    username: String,
+    email: String,
+    password: String,
+}
+
+// 📌 Функция для рендеринга главной страницы
+#[get("/")]
 async fn index(data: web::Data<Mutex<AppState>>) -> impl Responder {
     let tera = data.lock().unwrap();
     let mut ctx = Context::new();
@@ -18,7 +28,8 @@ async fn index(data: web::Data<Mutex<AppState>>) -> impl Responder {
     }
 }
 
-// Function to render the login page
+// 📌 Функция для рендеринга страницы входа
+#[get("/login")]
 async fn login_page(data: web::Data<Mutex<AppState>>) -> impl Responder {
     let tera = data.lock().unwrap();
     let mut ctx = Context::new();
@@ -30,7 +41,8 @@ async fn login_page(data: web::Data<Mutex<AppState>>) -> impl Responder {
     }
 }
 
-// Function to render the registration page
+// 📌 Функция для рендеринга страницы регистрации (форма)
+#[get("/register")]
 async fn register(data: web::Data<Mutex<AppState>>) -> impl Responder {
     let tera = data.lock().unwrap();
     let mut ctx = Context::new();
@@ -42,7 +54,17 @@ async fn register(data: web::Data<Mutex<AppState>>) -> impl Responder {
     }
 }
 
-// Function to render the users dashboard
+// 📌 Функция для обработки POST-запроса регистрации
+#[post("/register")]
+async fn register_user(form: web::Json<User>) -> impl Responder {
+    println!("Received registration: {:?}", form);
+
+    // Здесь можно добавить сохранение пользователя в базу данных
+    HttpResponse::Ok().json(format!("User {} registered successfully", form.username))
+}
+
+// 📌 Функция для рендеринга страницы пользователей
+#[get("/users")]
 async fn users_page(data: web::Data<Mutex<AppState>>) -> impl Responder {
     let tera = data.lock().unwrap();
     let mut ctx = Context::new();
@@ -54,7 +76,7 @@ async fn users_page(data: web::Data<Mutex<AppState>>) -> impl Responder {
     }
 }
 
-// Main function to start the server
+// 📌 Главная функция для запуска сервера
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let tera = Tera::new("src/views/**/*").expect("Failed to initialize Tera templates");
@@ -62,10 +84,11 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(Mutex::new(AppState { tera: tera.clone() })))
-            .route("/", web::get().to(index))
-            .route("/login", web::get().to(login_page))
-            .route("/register", web::get().to(register))
-            .route("/users", web::get().to(users_page))
+            .service(index)
+            .service(login_page)
+            .service(register)        // Страница регистрации (GET)
+            .service(register_user)   // Регистрация пользователя (POST)
+            .service(users_page)
     })
     .bind("0.0.0.0:8080")?
     .run()
